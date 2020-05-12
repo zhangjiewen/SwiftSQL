@@ -162,7 +162,39 @@ final class SQLStatementTests: XCTestCase {
     }
 
     func testBindByName() throws {
-        #warning("TODO: implement")
+        /// GIVEN
+        try db.createTables()
+
+        try db.statement("INSERT INTO Users (Level, Name) VALUES (?, ?)")
+            .bind(80, "Alex")
+            .execute()
+
+        // WHEN
+        let row = try XCTUnwrap(db
+            .statement("SELECT Level, Name FROM Users WHERE Name = :param")
+            .bind("Alex", for: ":param")
+            .next())
+
+        // THEN
+        XCTAssertEqual(row[0], 80)
+    }
+
+    func testBindByNameDictionary() throws {
+        /// GIVEN
+        try db.createTables()
+
+        try db.statement("INSERT INTO Users (Level, Name) VALUES (?, ?)")
+            .bind(80, "Alex")
+            .execute()
+
+        // WHEN
+        let row = try XCTUnwrap(db
+            .statement("SELECT Level, Name FROM Users WHERE Name = :param")
+            .bind([":param": "Alex"])
+            .next())
+
+        // THEN
+        XCTAssertEqual(row[0], 80)
     }
 
     func testClearBinding() throws {

@@ -32,7 +32,7 @@ VALUES (?, ?)
 2. Bind values to parameters using one of the `bind()` methods. The provided values must be one of the data types supported by SQLite (see `SQLDataType` for more info)
 
 ```swift
-try statement.bind("Alexander", "Grebenyuk")
+try statement.bind("John", "Appleseed")
 ```
 
 3. Execute the statement.

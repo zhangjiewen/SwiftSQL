@@ -64,6 +64,8 @@ public final class SQLStatement {
 
     // MARK: Execute
 
+    #warning("TODO: add example")
+
     /// Executes the statement and returns `true` if the next row is available.
     /// Returns `false` if the statement is finished executing and no more data
     /// is available. Throws an error if an error is encountered.
@@ -74,6 +76,7 @@ public final class SQLStatement {
         return SQLRow(statement: self)
     }
 
+    #warning("TODO: document")
     @discardableResult
     public func execute() throws -> SQLStatement {
         try isOK(sqlite3_step(ref))
@@ -82,14 +85,24 @@ public final class SQLStatement {
 
     // MARK: Binding Parameters
 
-    /// Binds values to the SQL statement parameters.
+    /// Binds values to the statement parameters.
+    ///
+    ///     try db.statement("INSERT INTO Users (Level, Name) VALUES (?, ?)")
+    ///        .bind(80, "John")
+    ///        .execute()
+    ///
     @discardableResult
     public func bind(_ parameters: SQLDataType?...) throws -> Self {
         try bind(parameters)
         return self
     }
 
-    /// Binds values to the SQL statement parameters.
+    /// Binds values to the statement parameters.
+    ///
+    ///     try db.statement("INSERT INTO Users (Level, Name) VALUES (?, ?)")
+    ///        .bind([80, "John"])
+    ///        .execute()
+    ///
     @discardableResult
     public func bind(_ parameters: [SQLDataType?]) throws -> Self {
         for (index, value) in zip(parameters.indices, parameters) {
@@ -98,23 +111,37 @@ public final class SQLStatement {
         return self
     }
 
-    /// Binds values to the SQL statement parameters.
+    /// Binds values to the named statement parameters.
+    ///
+    ///     let row = try db.statement("SELECT Level, Name FROM Users WHERE Name = :param LIMIT 1")
+    ///         .bind([":param": "John""])
+    ///         .next()
+    ///
+    /// - parameter name: The name of the parameter. If the name is missing, throws
+    /// an error.
     @discardableResult
     public func bind(_ parameters: [String: SQLDataType?]) throws -> Self {
-        for (name, value) in parameters {
-            try _bind(value, for: name)
+        for (key, value) in parameters {
+            try _bind(value, for: key)
         }
         return self
     }
 
     /// Binds values to the parameter with the given name.
     ///
-    /// - parameter name:
+    ///     let row = try db.statement("SELECT Level, Name FROM Users WHERE Name = :param LIMIT 1")
+    ///         .bind("John", for: ":param")
+    ///         .next()
+    ///
+    /// - parameter name: The name of the parameter. If the name is missing, throws
+    /// an error.
     @discardableResult
     public func bind<T: SQLDataType>(_ value: T?, for name: String) throws -> Self {
         let index = sqlite3_bind_parameter_index(ref, name)
-        guard index > 0 else { fatalError("Parameter not found: \(name)") }
-        try bind(value, at: Int(index))
+        guard index > 0 else {
+            throw SQLError(code: SQLITE_MISUSE, message: "Failed to find parameter named \(name)")
+        }
+        try bind(value, at: Int(index - 1))
         return self
     }
 
@@ -134,8 +161,10 @@ public final class SQLStatement {
 
     private func _bind(_ value: SQLDataType?, for name: String) throws {
         let index = sqlite3_bind_parameter_index(ref, name)
-        guard index > 0 else { fatalError("Parameter not found: \(name)") }
-        try _bind(value, at: Int32(index))
+        guard index > 0 else {
+            throw SQLError(code: SQLITE_MISUSE, message: "Failed to find parameter named \(name)")
+        }
+        try _bind(value, at: index - 1)
     }
 
     private func _bind(_ value: SQLDataType?, at index: Int32) throws {
