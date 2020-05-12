@@ -53,6 +53,12 @@ public final class SQLStatement {
     let db: SQLConnection
     let ref: OpaquePointer
 
+    /// Returns true (non-zero) if the statement has been stepped at least once
+    /// using `next()`, but has neither run to completion nor been reset.
+    public var isBusy: Bool {
+        sqlite3_stmt_busy(ref) != 0
+    }
+
     init(db: SQLConnection, ref: OpaquePointer) {
         self.db = db
         self.ref = ref

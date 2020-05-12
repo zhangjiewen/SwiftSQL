@@ -37,6 +37,7 @@ public struct SQLRow {
 
     /// Returns a single column of the current result row of a query.
     public subscript<T: SQLDataType>(name: String) -> T {
+        #warning("TODO: not implemented")
         fatalError()
     }
 
