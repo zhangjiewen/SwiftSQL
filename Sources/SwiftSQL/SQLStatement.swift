@@ -59,6 +59,13 @@ public final class SQLStatement {
         sqlite3_stmt_busy(ref) != 0
     }
 
+    /// Returns true if the statement makes no direct changes to the content of the database file.
+    ///
+    /// - note: For more information see [documentation](https://www.sqlite.org/c3ref/stmt_readonly.html).
+    public var isReadOnly: Bool {
+        sqlite3_stmt_readonly(ref) != 0
+    }
+
     init(db: SQLConnection, ref: OpaquePointer) {
         self.db = db
         self.ref = ref
