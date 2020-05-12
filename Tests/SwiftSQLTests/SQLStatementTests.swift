@@ -225,9 +225,9 @@ final class SQLStatementTests: XCTestCase {
         XCTAssertEqual(row[1], "Alex")
     }
 
-    // MARK: Query
+    // MARK: Next
 
-    func testQuery() throws {
+    func testNext() throws {
         // GIVEN
         try db.createTables()
         try db.populateStore()
@@ -246,7 +246,10 @@ final class SQLStatementTests: XCTestCase {
         }
 
         // THEN
-        XCTAssertEqual(objects, [User(name: "Alice", level: 80), User(name: "Bob", level: 90)])
+        XCTAssertEqual(objects, [
+            User(name: "Alice", level: 80),
+            User(name: "Bob", level: 90)
+        ])
     }
 }
 

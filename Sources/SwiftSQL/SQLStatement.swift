@@ -66,9 +66,19 @@ public final class SQLStatement {
 
     #warning("TODO: add example")
 
-    /// Executes the statement and returns `true` if the next row is available.
-    /// Returns `false` if the statement is finished executing and no more data
+    /// Executes the statement and returns the row (`SQLRow`) if it is available.
+    /// Returns nil if the statement is finished executing and no more data
     /// is available. Throws an error if an error is encountered.
+    ///
+    ///
+    ///     let statement = try db.statement("SELECT Name, Level FROM Users ORDER BY Level ASC")
+    ///
+    ///     var objects = [User]()
+    ///     while let row = try statement.next() {
+    ///         let user = User(name: row[0], level: row[1])
+    ///         objects.append(user)
+    ///     }
+    ///
     public func next() throws -> SQLRow? {
         guard try isOK(sqlite3_step(ref)) == SQLITE_ROW else {
             return nil
