@@ -260,7 +260,7 @@ final class SQLStatementTests: XCTestCase {
         let statement = try db.statement("SELECT * FROM Users")
 
         // THEN
-        XCTAssertEqual(statement.sql, "SELECT * FROM Users")
+        XCTAssertEqual(statement.info.sql, "SELECT * FROM Users")
     }
 }
 
