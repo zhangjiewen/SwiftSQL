@@ -6,6 +6,8 @@ import Foundation
 import SQLite3
 
 #warning("TODO: update documentation")
+/// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
+/// for more information.
 public struct SQLError: Swift.Error, CustomStringConvertible {
     // MARK: Properties
 

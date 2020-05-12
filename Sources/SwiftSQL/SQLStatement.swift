@@ -64,8 +64,6 @@ public final class SQLStatement {
 
     // MARK: Execute
 
-    #warning("TODO: add example")
-
     /// Executes the statement and returns the row (`SQLRow`) if it is available.
     /// Returns nil if the statement is finished executing and no more data
     /// is available. Throws an error if an error is encountered.
@@ -79,6 +77,8 @@ public final class SQLStatement {
     ///         objects.append(user)
     ///     }
     ///
+    /// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
+    /// for more information.
     public func next() throws -> SQLRow? {
         guard try isOK(sqlite3_step(ref)) == SQLITE_ROW else {
             return nil
@@ -86,7 +86,10 @@ public final class SQLStatement {
         return SQLRow(statement: self)
     }
 
-    #warning("TODO: document")
+    /// Executes the statement. Throws an error if an error is occured.
+    ///
+    /// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
+    /// for more information.
     @discardableResult
     public func execute() throws -> SQLStatement {
         try isOK(sqlite3_step(ref))

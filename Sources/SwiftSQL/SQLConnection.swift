@@ -30,6 +30,9 @@ public final class SQLConnection {
     /// - parameter mode: Specifies whether open the database for reading, writing
     /// or both, and whether to create it on write. `.readwrite(create: true)` by default.
     /// - parameter options: See `SQLConnectionOptions` for more information.
+    ///
+    /// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
+    /// for more information.
     public init(location: Location, mode: Mode = .readwrite(create: true), options: Options = Options()) throws {
         let path: String
         var flags: Int32 = 0
