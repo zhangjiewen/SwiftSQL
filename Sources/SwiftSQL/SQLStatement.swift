@@ -106,7 +106,7 @@ public final class SQLStatement {
     @discardableResult
     public func bind(_ parameters: [SQLDataType?]) throws -> Self {
         for (index, value) in zip(parameters.indices, parameters) {
-            try _bind(value, at: Int32(index))
+            try _bind(value, at: Int32(index + 1))
         }
         return self
     }
@@ -137,11 +137,7 @@ public final class SQLStatement {
     /// an error.
     @discardableResult
     public func bind<T: SQLDataType>(_ value: T?, for name: String) throws -> Self {
-        let index = sqlite3_bind_parameter_index(ref, name)
-        guard index > 0 else {
-            throw SQLError(code: SQLITE_MISUSE, message: "Failed to find parameter named \(name)")
-        }
-        try bind(value, at: Int(index - 1))
+        try _bind(value, for: name)
         return self
     }
 
@@ -150,13 +146,26 @@ public final class SQLStatement {
     /// - parameter index: The index starts at 0.
     @discardableResult
     public func bind<T: SQLDataType>(_ value: T?, at index: Int) throws -> Self {
-        let index = index + 1
+        try _bind(value, at: index + 1)
+        return self
+    }
+
+    // MARK: Binding Parameters (Private)
+
+    private func _bind<T: SQLDataType>(_ value: T?, at index: Int) throws {
         if let value = value {
             value.sqlBind(statement: ref, index: Int32(index))
         } else {
             sqlite3_bind_null(ref, Int32(index))
         }
-        return self
+    }
+
+    private func _bind<T: SQLDataType>(_ value: T?, for name: String) throws {
+        let index = sqlite3_bind_parameter_index(ref, name)
+        guard index > 0 else {
+            throw SQLError(code: SQLITE_MISUSE, message: "Failed to find parameter named \(name)")
+        }
+        try _bind(value, at: index)
     }
 
     private func _bind(_ value: SQLDataType?, for name: String) throws {
@@ -164,16 +173,29 @@ public final class SQLStatement {
         guard index > 0 else {
             throw SQLError(code: SQLITE_MISUSE, message: "Failed to find parameter named \(name)")
         }
-        try _bind(value, at: index - 1)
+        try _bind(value, at: index)
     }
 
     private func _bind(_ value: SQLDataType?, at index: Int32) throws {
-        let index = index + 1
         if let value = value {
             value.sqlBind(statement: ref, index: index)
         } else {
             sqlite3_bind_null(ref, index)
         }
+    }
+
+    // MARK: Reset
+
+    /// Resets the expression and prepares it for the new execution.
+    ///
+    /// SQLite allows the same prepared statement to be evaluated multiple times.
+    /// After a prepared statement has been evaluated it can be reset in order to
+    /// be evaluated again by a call to `reset()`. Reusing compiled statements
+    /// can give a significant performance improvement.
+    @discardableResult
+    public func reset() throws -> SQLStatement {
+        try isOK(sqlite3_reset(ref))
+        return self
     }
 
     /// Clears bindings.
@@ -193,20 +215,6 @@ public final class SQLStatement {
     @discardableResult
     public func clearBindings() throws -> SQLStatement {
         try isOK(sqlite3_clear_bindings(ref))
-        return self
-    }
-
-    // MARK: Reset
-
-    /// Resets the expression and prepares it for the new execution.
-    ///
-    /// SQLite allows the same prepared statement to be evaluated multiple times.
-    /// After a prepared statement has been evaluated it can be reset in order to
-    /// be evaluated again by a call to `reset()`. Reusing compiled statements
-    /// can give a significant performance improvement.
-    @discardableResult
-    public func reset() throws -> SQLStatement {
-        try isOK(sqlite3_reset(ref))
         return self
     }
 
