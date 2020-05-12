@@ -55,16 +55,15 @@ public final class SQLStatement {
 
     /// Returns true (non-zero) if the statement has been stepped at least once
     /// using `next()`, but has neither run to completion nor been reset.
-    public var isBusy: Bool {
-        sqlite3_stmt_busy(ref) != 0
-    }
+    public var isBusy: Bool { sqlite3_stmt_busy(ref) != 0 }
 
     /// Returns true if the statement makes no direct changes to the content of the database file.
     ///
     /// - note: For more information see [documentation](https://www.sqlite.org/c3ref/stmt_readonly.html).
-    public var isReadOnly: Bool {
-        sqlite3_stmt_readonly(ref) != 0
-    }
+    public var isReadOnly: Bool { sqlite3_stmt_readonly(ref) != 0 }
+
+    /// Returns the SQL text used to create the statement.
+    public var sql: String { String(cString: sqlite3_sql(ref)) }
 
     init(db: SQLConnection, ref: OpaquePointer) {
         self.db = db

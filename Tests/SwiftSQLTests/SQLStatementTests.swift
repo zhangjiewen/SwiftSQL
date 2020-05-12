@@ -251,6 +251,17 @@ final class SQLStatementTests: XCTestCase {
             User(name: "Bob", level: 90)
         ])
     }
+
+    // MARK: Misc
+
+    func testSQL() throws {
+        // GIVEN
+        try db.createTables()
+        let statement = try db.statement("SELECT * FROM Users")
+
+        // THEN
+        XCTAssertEqual(statement.sql, "SELECT * FROM Users")
+    }
 }
 
 private extension SQLConnection {
