@@ -111,7 +111,7 @@ public final class SQLConnection {
     // MARK: Private
 
     @discardableResult
-    private func isOK(_ code: Int32) throws -> Int32 {
+    func isOK(_ code: Int32) throws -> Int32 {
         guard let error = SQLError(code: code, db: ref) else { return code }
         throw error
     }

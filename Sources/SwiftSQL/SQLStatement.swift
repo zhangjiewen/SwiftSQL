@@ -217,7 +217,6 @@ public final class SQLStatement {
 
     @discardableResult
     private func isOK(_ code: Int32) throws -> Int32 {
-        guard let error = SQLError(code: code, db: db.ref) else { return code }
-        throw error
+        try db.isOK(code)
     }
 }
