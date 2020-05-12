@@ -4,10 +4,9 @@
 
 import XCTest
 import Foundation
-import CoreData
 import SwiftSQL
 
-final class DatabaseTests: XCTestCase {
+final class SQLConnectionTests: XCTestCase {
     var tempDir: TempDirectory!
 
     override func setUp() {
@@ -22,9 +21,25 @@ final class DatabaseTests: XCTestCase {
         try! tempDir.destroy()
     }
 
+    // MARK: Opening Connection
+
     func testInit() {
         // WHEN/THEN
-        let url = tempDir.file(named: "temp-db")
-        XCTAssertNoThrow(try SQLConnection(url: url))
+        XCTAssertNoThrow(try SQLConnection(url: tempDir.file(named: "temp-db")))
+    }
+
+    func testInitTemporary() {
+        // WHEN/THEN
+        XCTAssertNoThrow(try SQLConnection(location: .temporary))
+    }
+
+    func testInitInMemoryPrivate() {
+        // WHEN/THEN
+        XCTAssertNoThrow(try SQLConnection(location: .memory()))
+    }
+
+    func testInitInMemoryNamed() {
+        // WHEN/THEN
+        XCTAssertNoThrow(try SQLConnection(location: .memory(name: "temp")))
     }
 }

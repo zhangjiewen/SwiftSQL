@@ -4,8 +4,7 @@
 
 import XCTest
 import Foundation
-import CoreData
-@testable import SwiftSQL
+import SwiftSQL
 
 final class TempDirectory {
     let url: URL
