@@ -3,7 +3,7 @@
 <img src="https://github.com/kean/SwiftSQL/workflows/CI/badge.svg">
 </p>
 
-**SwiftSQL** introduces a Swift API for [SQLite](https://www.sqlite.org/index.html). It doesn't have any ORM-like features. It maps directly to the SQLite concepts with some affordances to make it great Swift API. It is feature-complete, fully documented and tested.
+**SwiftSQL** introduces a Swift API for [SQLite](https://www.sqlite.org/index.html). It doesn't have any ORM-like features. It maps directly to the SQLite concepts with some affordances to make it great a Swift API. It is feature-complete, fully documented and tested.
 
 <br/>
 
@@ -24,7 +24,8 @@ The life-cycle of a prepared statement object usually goes like this:
 ```swift
 let db = try SQLConnection(url: storeURL)
 let statement = try db.statement("""
-INSERT INTO Users (Name, Surname) VALUES (?, ?)
+INSERT INTO Users (Name, Surname)
+VALUES (?, ?)
 """)
 ```
 

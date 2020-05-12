@@ -39,9 +39,10 @@ final class SQLStatementTests: XCTestCase {
 
     // MARK: Binding Parameters
 
-    func testBindParameters() throws {
+    func testBindUsingIndexes() throws {
         /// GIVEN
         try db.createTables()
+
         let statement = try db.statement("""
         INSERT INTO Users (Level, Name)
         VALUES (?, ?)
@@ -49,26 +50,147 @@ final class SQLStatementTests: XCTestCase {
 
         // WHEN
         try statement
-            .bind(Int64(80), at: 0)
+            .bind(80, at: 0)
             .bind("Alex", at: 1)
             .execute()
 
         // THEN
-        #warning("TODO: execute statement")
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0], 80)
+        XCTAssertEqual(row[1], "Alex")
     }
 
-    func testBindInt() throws {
+    func testBindNilUsingIndexes() throws {
+        /// GIVEN
+        try db.createTables()
 
+        let statement = try db.statement("""
+        INSERT INTO Users (Level, Name)
+        VALUES (?, ?)
+        """)
+
+        // WHEN
+        try statement
+            .bind(80, at: 0)
+            .bind(nil as String?, at: 1)
+            .execute()
+
+        // THEN
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0], 80)
+        XCTAssertEqual(row[1] as String?, nil)
     }
 
-    // ...
+    func testBindUsingArray() throws {
+        /// GIVEN
+        try db.createTables()
+
+        let statement = try db.statement("""
+        INSERT INTO Users (Level, Name)
+        VALUES (?, ?)
+        """)
+
+        // WHEN
+        try statement
+            .bind([80, "Alex"])
+            .execute()
+
+        // THEN
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0], 80)
+        XCTAssertEqual(row[1], "Alex")
+    }
+
+    func testBindUsingArrayNilValue() throws {
+        /// GIVEN
+        try db.createTables()
+
+        let statement = try db.statement("""
+        INSERT INTO Users (Level, Name)
+        VALUES (?, ?)
+        """)
+
+        // WHEN
+        try statement
+            .bind([80, nil])
+            .execute()
+
+        // THEN
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0], 80)
+        XCTAssertEqual(row[1] as String?, nil)
+    }
+
+    func testBindUsingVariadics() throws {
+        /// GIVEN
+        try db.createTables()
+
+        let statement = try db.statement("""
+        INSERT INTO Users (Level, Name)
+        VALUES (?, ?)
+        """)
+
+        // WHEN
+        try statement
+            .bind(80, "Alex")
+            .execute()
+
+        // THEN
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0], 80)
+        XCTAssertEqual(row[1], "Alex")
+    }
+
+    func testBindUsingVariadicsNilValue() throws {
+        /// GIVEN
+        try db.createTables()
+
+        let statement = try db.statement("""
+        INSERT INTO Users (Level, Name)
+        VALUES (?, ?)
+        """)
+
+        // WHEN
+        try statement
+            .bind(80, nil)
+            .execute()
+
+        // THEN
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0], 80)
+        XCTAssertEqual(row[1] as String?, nil)
+    }
 
     func testBindByName() throws {
-
+        #warning("TODO: implement")
     }
 
-    func testBindByNameMultiple() throws {
+    func testClearBinding() throws {
+        /// GIVEN
+        try db.createTables()
 
+        let statement = try db.statement("""
+        INSERT INTO Users (Level, Name)
+        VALUES (?, ?)
+        """)
+
+        try statement
+            .bind(80, nil)
+            .execute()
+
+        try db.execute("DELETE FROM Users")
+
+        // WHEN
+        try statement
+            .reset()
+            .clearBindings()
+            .bind("Alex", at: 1)
+            .execute()
+
+        // THEN
+        let row = try XCTUnwrap(db.statement("SELECT Level, Name FROM Users").next())
+        XCTAssertEqual(row[0] as Int?, nil)
+        XCTAssertEqual(row[1], "Alex")
     }
 
     // MARK: Query

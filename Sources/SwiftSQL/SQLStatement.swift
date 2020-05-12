@@ -82,14 +82,14 @@ public final class SQLStatement {
 
     // MARK: Binding Parameters
 
-    #warning("TODO: document")
-    #warning("TODO: bind should throw")
+    /// Binds values to the SQL statement parameters.
     @discardableResult
     public func bind(_ parameters: SQLDataType?...) throws -> Self {
         try bind(parameters)
         return self
     }
 
+    /// Binds values to the SQL statement parameters.
     @discardableResult
     public func bind(_ parameters: [SQLDataType?]) throws -> Self {
         for (index, value) in zip(parameters.indices, parameters) {
@@ -98,6 +98,7 @@ public final class SQLStatement {
         return self
     }
 
+    /// Binds values to the SQL statement parameters.
     @discardableResult
     public func bind(_ parameters: [String: SQLDataType?]) throws -> Self {
         for (name, value) in parameters {
@@ -106,6 +107,9 @@ public final class SQLStatement {
         return self
     }
 
+    /// Binds values to the parameter with the given name.
+    ///
+    /// - parameter name:
     @discardableResult
     public func bind<T: SQLDataType>(_ value: T?, for name: String) throws -> Self {
         let index = sqlite3_bind_parameter_index(ref, name)
@@ -114,6 +118,8 @@ public final class SQLStatement {
         return self
     }
 
+    /// Binds value to the given index.
+    ///
     /// - parameter index: The index starts at 0.
     @discardableResult
     public func bind<T: SQLDataType>(_ value: T?, at index: Int) throws -> Self {
@@ -155,8 +161,10 @@ public final class SQLStatement {
     /// `clearBindings()` allows you to clear those bound values. It is not required
     /// to call `clearBindings()` every time. Simplify overwriting the existing values
     /// does the trick.
-    public func clearBindings() throws {
+    @discardableResult
+    public func clearBindings() throws -> SQLStatement {
         try isOK(sqlite3_clear_bindings(ref))
+        return self
     }
 
     // MARK: Reset
@@ -167,8 +175,10 @@ public final class SQLStatement {
     /// After a prepared statement has been evaluated it can be reset in order to
     /// be evaluated again by a call to `reset()`. Reusing compiled statements
     /// can give a significant performance improvement.
-    public func reset() throws {
+    @discardableResult
+    public func reset() throws -> SQLStatement {
         try isOK(sqlite3_reset(ref))
+        return self
     }
 
     // MARK: Private
