@@ -22,7 +22,7 @@ final class PerformanceTests: XCTestCase {
         tempDir = nil
     }
 
-    func testWrite() throws {
+    func xtestWrite() throws {
         try db.execute("""
         CREATE TABLE Users
         (
@@ -51,7 +51,7 @@ final class PerformanceTests: XCTestCase {
         }
     }
 
-    func testWriteBindArray() throws {
+    func xtestWriteBindArray() throws {
         try db.execute("""
         CREATE TABLE Users
         (

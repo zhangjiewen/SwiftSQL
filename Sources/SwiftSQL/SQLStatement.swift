@@ -136,7 +136,7 @@ public final class SQLStatement {
     /// - parameter name: The name of the parameter. If the name is missing, throws
     /// an error.
     @discardableResult
-    public func bind<T: SQLDataType>(_ value: T?, for name: String) throws -> Self {
+    public func bind(_ value: SQLDataType?, for name: String) throws -> Self {
         try _bind(value, for: name)
         return self
     }
@@ -145,27 +145,9 @@ public final class SQLStatement {
     ///
     /// - parameter index: The index starts at 0.
     @discardableResult
-    public func bind<T: SQLDataType>(_ value: T?, at index: Int) throws -> Self {
-        try _bind(value, at: index + 1)
+    public func bind(_ value: SQLDataType?, at index: Int) throws -> Self {
+        try _bind(value, at: Int32(index + 1))
         return self
-    }
-
-    // MARK: Binding Parameters (Private)
-
-    private func _bind<T: SQLDataType>(_ value: T?, at index: Int) throws {
-        if let value = value {
-            value.sqlBind(statement: ref, index: Int32(index))
-        } else {
-            sqlite3_bind_null(ref, Int32(index))
-        }
-    }
-
-    private func _bind<T: SQLDataType>(_ value: T?, for name: String) throws {
-        let index = sqlite3_bind_parameter_index(ref, name)
-        guard index > 0 else {
-            throw SQLError(code: SQLITE_MISUSE, message: "Failed to find parameter named \(name)")
-        }
-        try _bind(value, at: index)
     }
 
     private func _bind(_ value: SQLDataType?, for name: String) throws {
