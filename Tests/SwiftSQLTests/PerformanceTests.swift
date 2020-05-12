@@ -22,7 +22,7 @@ final class PerformanceTests: XCTestCase {
         tempDir = nil
     }
 
-    func xtestWrite() throws {
+    func testWrite() throws {
         try db.execute("""
         CREATE TABLE Users
         (
@@ -51,7 +51,7 @@ final class PerformanceTests: XCTestCase {
         }
     }
 
-    func xtestWriteBindArray() throws {
+    func testWriteBindArray() throws {
         try db.execute("""
         CREATE TABLE Users
         (
@@ -71,34 +71,6 @@ final class PerformanceTests: XCTestCase {
             for _ in 0..<500 {
                 try! statement
                     .bind(["Alice", "Tests", Int64(80)])
-                    .execute()
-
-                try! statement.reset()
-            }
-        }
-    }
-
-    #warning("TODO: this fails")
-    func xtestWriteBindDictionary() throws {
-        try db.execute("""
-        CREATE TABLE Users
-        (
-            Id INTEGER PRIMARY KEY NOT NULL,
-            Name VARCHAR,
-            Surname VARCHAR,
-            Level INTEGER
-        )
-        """)
-
-        let statement = try db.statement("""
-        INSERT INTO Users (Name, Surname, Level)
-        VALUES (:name, :surname, :level)
-        """)
-
-        measure {
-            for _ in 0..<500 {
-                try! statement
-                    .bind(["name": "Alice", "surname": "Tests", "level": Int64(80)])
                     .execute()
 
                 try! statement.reset()
