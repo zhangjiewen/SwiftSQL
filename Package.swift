@@ -24,12 +24,14 @@ let package = Package(
         ),
         .testTarget(
             name: "SwiftSQLTests",
-            dependencies: ["SwiftSQL"]),
+            dependencies: ["SwiftSQL"]
+        ),
         .target(
             name: "SwiftSQLExt"
         ),
         .testTarget(
             name: "SwiftSQLExtTests",
-            dependencies: ["SwiftSQL", "SwiftSQLExt"]),
+            dependencies: ["SwiftSQL", "SwiftSQLExt"]
+        ),
     ]
 )

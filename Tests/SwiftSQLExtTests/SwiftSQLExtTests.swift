@@ -24,244 +24,55 @@ final class SwiftSQLExtTests: XCTestCase {
         try! tempDir.destroy()
     }
 
-    // MARK: Execute
+    // MARK: Rows
 
-    func testCreateTable() throws {
-        // WHEN/THEN
-        XCTAssertNoThrow(try db.execute("""
-        CREATE TABLE Users
-        (
-            Id INTEGER PRIMARY KEY NOT NULL,
-            Level INTEGER,
-            Name VARCHAR
-        )
-        """))
-    }
-
-    // MARK: Binding Parameters
-
-    func testBindUsingIndexes() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let insert = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        // WHEN
-        try insert
-            .bind(80, at: 0)
-            .bind("Alex", at: 1)
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0), 80)
-        XCTAssertEqual(select.column(at: 1), "Alex")
-    }
-
-    func testBindNilUsingIndexes() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let statement = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        // WHEN
-        try statement
-            .bind(80, at: 0)
-            .bind(nil as String?, at: 1)
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0), 80)
-        XCTAssertEqual(select.column(at: 1) as String?, nil)
-    }
-
-    func testBindUsingArray() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let statement = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        // WHEN
-        try statement
-            .bind([80, "Alex"])
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0), 80)
-        XCTAssertEqual(select.column(at: 1), "Alex")
-    }
-
-    func testBindUsingArrayNilValue() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let statement = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        // WHEN
-        try statement
-            .bind([80, nil])
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0), 80)
-        XCTAssertEqual(select.column(at: 1) as String?, nil)
-    }
-
-    func testBindUsingVariadics() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let statement = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        // WHEN
-        try statement
-            .bind(80, "Alex")
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0), 80)
-        XCTAssertEqual(select.column(at: 1), "Alex")
-    }
-
-    func testBindUsingVariadicsNilValue() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let statement = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        // WHEN
-        try statement
-            .bind(80, nil)
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0), 80)
-        XCTAssertEqual(select.column(at: 1) as String?, nil)
-    }
-
-    func testBindByName() throws {
-        /// GIVEN
-        try db.createTables()
-
-        try db.prepare("INSERT INTO Users (Level, Name) VALUES (?, ?)")
-            .bind(80, "Alex")
-            .execute()
-
-        // WHEN
-        let select = try db.prepare("SELECT Level, Name FROM Users WHERE Name = :param")
-        XCTAssertNoThrow(try select.bind("Alex", for: ":param"))
-        XCTAssertTrue(try select.step())
-
-        // THEN
-        XCTAssertEqual(select.column(at: 0), 80)
-    }
-
-    func testBindByNameDictionary() throws {
-        /// GIVEN
-        try db.createTables()
-
-        try db.prepare("INSERT INTO Users (Level, Name) VALUES (?, ?)")
-            .bind(80, "Alex")
-            .execute()
-
-        // WHEN
-        let select = try db.prepare("SELECT Level, Name FROM Users WHERE Name = :param")
-        XCTAssertNoThrow(try select.bind([":param": "Alex"]))
-        XCTAssertTrue(try select.step())
-
-        // THEN
-        XCTAssertEqual(select.column(at: 0), 80)
-    }
-
-    func testClearBinding() throws {
-        /// GIVEN
-        try db.createTables()
-
-        let statement = try db.prepare("""
-        INSERT INTO Users (Level, Name)
-        VALUES (?, ?)
-        """)
-
-        try statement
-            .bind(80, nil)
-            .execute()
-
-        try db.execute("DELETE FROM Users")
-
-        // WHEN
-        try statement
-            .reset()
-            .clearBindings()
-            .bind("Alex", at: 1)
-            .execute()
-
-        // THEN
-        let select = try db.prepare("SELECT Level, Name FROM Users")
-        XCTAssertTrue(try select.step())
-        XCTAssertEqual(select.column(at: 0) as Int?, nil)
-        XCTAssertEqual(select.column(at: 1), "Alex")
-    }
-
-    // MARK: Step
-
-    func testStep() throws {
+    func testRow() throws {
         // GIVEN
-        try db.createTables()
         try db.populateStore()
 
         // WHEN
-        let statement = try db.prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
-
-        var objects = [User]()
-        while try statement.step() {
-            let user = User(
-                name: statement.column(at: 0),
-                level: statement.column(at: 1)
-            )
-            objects.append(user)
-        }
+        let user = try db
+            .prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
+            .row(User.self)
 
         // THEN
-        XCTAssertEqual(objects, [
+        XCTAssertEqual(user, User(name: "Alice", level: 80))
+    }
+
+    func testRows() throws {
+        // GIVEN
+        try db.populateStore()
+
+        // WHEN
+        let users = try db
+            .prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
+            .rows(User.self)
+
+        // THEN
+        XCTAssertEqual(users, [
             User(name: "Alice", level: 80),
             User(name: "Bob", level: 90)
         ])
     }
 
-    //
+    func testFirstNRows() throws {
+        // GIVEN
+        try db.populateStore()
+
+        // WHEN
+        let users = try db
+            .prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
+            .rows(count: 1, User.self)
+
+        // THEN
+        XCTAssertEqual(users, [
+            User(name: "Alice", level: 80)
+        ])
+    }
 }
 
 private extension SQLConnection {
-    func createTables() throws {
+    func populateStore() throws {
         try execute("""
         CREATE TABLE Users
         (
@@ -270,9 +81,7 @@ private extension SQLConnection {
             Level INTEGER
         )
         """)
-    }
 
-    func populateStore() throws {
         let statement = try self.prepare("""
         INSERT INTO Users (Name, Level)
         VALUES (?, ?)
@@ -287,5 +96,21 @@ private extension SQLConnection {
         try statement
             .bind("Bob", Int64(90))
             .execute()
+    }
+}
+
+
+private struct User: Hashable, SQLRowDecodable {
+    let name: String
+    let level: Int64
+
+    init(name: String, level: Int64) {
+        self.name = name
+        self.level = level
+    }
+
+    init(row: SQLRow) throws {
+        self.name = row[0]
+        self.level = row[1]
     }
 }

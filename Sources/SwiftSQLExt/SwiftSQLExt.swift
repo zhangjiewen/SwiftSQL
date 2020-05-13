@@ -7,26 +7,23 @@ import SQLite3
 import SwiftSQL
 
 public extension SQLStatement {
-    func next() throws -> SQLRow? {
-        guard try self.step() else {
+    /// Fetches the next row.
+    func row<T: SQLRowDecodable>(_ type: T.Type) throws -> T? {
+        guard try step() else {
             return nil
         }
-        return SQLRow(statement: self)
+        return try T(row: SQLRow(statement: self))
     }
 
-    func all<T: SQLRowDecodable>(_ type: T.Type) throws -> [T] {
+    /// Fetches the first `count` rows returned by the statement. By default,
+    /// fetches all rows.
+    func rows<T: SQLRowDecodable>(count: Int? = nil, _ type: T.Type) throws -> [T] {
         var objects = [T]()
-        while let object = try next(T.self) {
+        let limit = count ?? Int.max
+        while let object = try row(T.self), objects.count < limit {
             objects.append(object)
         }
         return objects
-    }
-
-    func next<T: SQLRowDecodable>(_ type: T.Type) throws -> T? {
-        guard let row = try next() else {
-            return nil
-        }
-        return try T(row: row)
     }
 }
 

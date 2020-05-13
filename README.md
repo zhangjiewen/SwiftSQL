@@ -7,7 +7,7 @@
 
 **SwiftSQL** is a micro Swift [SQLite](https://www.sqlite.org/index.html) wrapper, solid and meticulously documented. It maps directly to the SQLite concepts and doesn't introduce anything beyond them.
 
-**SwiftSQLExt** introduces some basic conveniences on top of it. The entire library is just 300 lines of code, but it gets you 90% there.
+**SwiftSQLExt** introduces some basic conveniences on top of it. The entire library is just 300 lines of code, but it gets you 80% there.
 
 SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally.
 
@@ -101,6 +101,14 @@ try db.prepare("INSERT INTO Users (Name) VALUES (?)")
 # Extensions
 
 **SwiftSQLExt** introduces some basic conveniences on top the core framework.
+
+### Mapping Rows
+
+Add conformance to `SQLRowDecodable` to use convenience APIs for converting rows into your model entities.
+
+```swift
+
+```
 
 # Minimum Requirements
 
