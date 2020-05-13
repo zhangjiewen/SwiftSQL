@@ -107,7 +107,16 @@ try db.prepare("INSERT INTO Users (Name) VALUES (?)")
 Add conformance to `SQLRowDecodable` to use convenience APIs for converting rows into your model entities.
 
 ```swift
+// Fetch all of the rows
+let users = try db
+    .prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
+    .rows(User.self)
+    
+// Or only the next row
+statement.row(User.self)
 
+// Or the next N rows
+statement.rows(User.self, count: 50)
 ```
 
 # Minimum Requirements

@@ -17,7 +17,7 @@ public extension SQLStatement {
 
     /// Fetches the first `count` rows returned by the statement. By default,
     /// fetches all rows.
-    func rows<T: SQLRowDecodable>(count: Int? = nil, _ type: T.Type) throws -> [T] {
+    func rows<T: SQLRowDecodable>(_ type: T.Type, count: Int? = nil) throws -> [T] {
         var objects = [T]()
         let limit = count ?? Int.max
         while let object = try row(T.self), objects.count < limit {
