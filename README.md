@@ -5,11 +5,25 @@
 <img src="https://github.com/kean/SwiftSQL/workflows/CI/badge.svg">
 </p>
 
-**SwiftSQL** introduces a Swift API for [SQLite](https://www.sqlite.org/index.html). It doesn't have any ORM-like features. It maps directly to the SQLite concepts and doesn't introduce anything beyond it. It is feature-complete, fully documented and tested.
+**SwiftSQL** is a micro Swift [SQLite](https://www.sqlite.org/index.html) wrapper, solid and meticulously documented. It maps directly to the SQLite concepts and doesn't introduce anything beyond them.
+
+**SwiftSQLExt** introduces some basic conveniences on top of it. The entire library is just 300 lines of code, but it gets you 90% there.
+
+SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally.
 
 <br/>
 
 # Usage
+
+### `SQLConnection`
+
+To start reading or writing to a database, you need to open a connection.
+
+```swift
+let db = try SQLConnection(url: storeURL)
+```
+
+By default, the database is opened in readwrite mode and is created if it doesn't exist.
 
 ### `SQLStatement`
 
@@ -25,7 +39,7 @@ The life-cycle of a prepared statement object usually goes like this:
 
 ```swift
 let db = try SQLConnection(url: storeURL)
-let statement = try db.statement("""
+let statement = try db.prepare("""
 INSERT INTO Users (Name, Surname)
 VALUES (?, ?)
 """)
@@ -42,13 +56,13 @@ try statement.bind("John", "Appleseed")
 3. Execute the statement.
 
 ```swift
-// Using `execute()` method to run the statement.
-try statement.execute()
+// Use `step()` to execute a statement
+try statement.step()
 
-// If it is a `SELECT` query, use `next()`.
-// See `SQLRow` type for more info how to read data from the columns.
-while let row = try statement.next() {
-    let name: String = row[0]
+// If the statement returns multiple SQL rows, you can step in a loop
+// and use `column()` family of methods to retrieve values for the current row. 
+while try statement.step() {
+    let name: String = statement.column(at: 0)
 }
 ```
 
@@ -67,7 +81,7 @@ The compiled statement is going to be automatically destroyed when the
 All of the methods outlined in the previous section are chainable:
 
 ```swift
-try db.statement("INSERT INTO Users (Name) VALUES (?)")
+try db.prepare("INSERT INTO Users (Name) VALUES (?)")
     .bind("Alex")
     .execute()
 ```
@@ -82,7 +96,11 @@ try db.statement("INSERT INTO Users (Name) VALUES (?)")
 - `String`
 - `Data`
 
-> To add support for custom data types, like `Bool` or `Date`, see [Advanced Usage Guide](https://github.com/kean/SwiftSQL/blob/0.1.0/Docs/advanced-usage-guide.md) 
+> To add support for custom data types, like `Bool` or `Date`, see [Advanced Usage Guide](https://github.com/kean/SwiftSQL/blob/0.1.0/Docs/advanced-usage-guide.md)
+
+# Extensions
+
+**SwiftSQLExt** introduces some basic conveniences on top the core framework.
 
 # Minimum Requirements
 

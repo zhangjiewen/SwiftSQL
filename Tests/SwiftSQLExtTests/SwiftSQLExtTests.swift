@@ -5,8 +5,9 @@
 import XCTest
 import Foundation
 import SwiftSQL
+import SwiftSQLExt
 
-final class SQLStatementTests: XCTestCase {
+final class SwiftSQLExtTests: XCTestCase {
     var tempDir: TempDirectory!
     var db: SQLConnection!
 
@@ -256,25 +257,7 @@ final class SQLStatementTests: XCTestCase {
         ])
     }
 
-    // MARK: Misc
-
-    func testColumnCount() throws {
-        // GIVEN
-        try db.createTables()
-        let statement = try db.prepare("SELECT * FROM Users")
-
-        // THEN
-        XCTAssertEqual(statement.columnCount, 3)
-    }
-
-    func testColumnNameAtIndex() throws {
-        // GIVEN
-        try db.createTables()
-        let statement = try db.prepare("SELECT * FROM Users")
-
-        // THEN
-        XCTAssertEqual(statement.columnName(at: 1), "Name")
-    }
+    //
 }
 
 private extension SQLConnection {

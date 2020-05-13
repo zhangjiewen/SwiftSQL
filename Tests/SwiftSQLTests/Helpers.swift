@@ -26,3 +26,15 @@ final class TempDirectory {
         try FileManager.default.removeItem(at: url)
     }
 }
+
+struct User: Hashable {
+    let name: String
+    let surname: String
+    let level: Int64
+
+    init(name: String, surname: String = "", level: Int64) {
+        self.name = name
+        self.surname = surname
+        self.level = level
+    }
+}

@@ -5,25 +5,15 @@
 import Foundation
 import SQLite3
 
-#warning("TODO: update documentation")
-/// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
-/// for more information.
-public struct SQLError: Swift.Error, CustomStringConvertible {
-    // MARK: Properties
-
-    /// The [code](https://www.sqlite.org/c3ref/c_abort.html) of the specific error encountered by SQLite.
+/// Represents an SQLite error.
+public struct SQLError: Swift.Error {
+    /// The [error code](https://www.sqlite.org/c3ref/c_abort.html).
     public let code: Int32
 
-    /// The [message](https://www.sqlite.org/c3ref/errcode.html) of the specific error encountered by SQLite.
+    /// The [error message](https://www.sqlite.org/c3ref/errcode.html).
     public var message: String
 
-    /// A textual description of the [error code](https://www.sqlite.org/c3ref/errcode.html).
-    public var codeDescription: String { return String(cString: sqlite3_errstr(code)) }
-
-    // MARK: Initialization
-
     init?(code: Int32, db: OpaquePointer) {
-        // This is much faster than using a set for just three values.
         guard !(code == SQLITE_ROW || code == SQLITE_OK || code == SQLITE_DONE) else { return nil }
 
         self.code = code
@@ -33,15 +23,5 @@ public struct SQLError: Swift.Error, CustomStringConvertible {
     public init(code: Int32, message: String) {
         self.code = code
         self.message = message
-    }
-
-    public var description: String {
-        let messageArray = [
-            "message=\"\(message)\"",
-            "code=\(code)",
-            "codeDescription=\"\(codeDescription)\""
-        ]
-
-        return "{ " + messageArray.joined(separator: ", ") + " }"
     }
 }

@@ -33,7 +33,7 @@ final class PerformanceTests: XCTestCase {
         )
         """)
 
-        let statement = try db.statement("""
+        let statement = try db.prepare("""
         INSERT INTO Users (Name, Surname, Level)
         VALUES (?, ?, ?)
         """)
@@ -62,7 +62,7 @@ final class PerformanceTests: XCTestCase {
         )
         """)
 
-        let statement = try db.statement("""
+        let statement = try db.prepare("""
         INSERT INTO Users (Name, Surname, Level)
         VALUES (?, ?, ?)
         """)
@@ -89,7 +89,7 @@ final class PerformanceTests: XCTestCase {
         )
         """)
 
-        let statement = try db.statement("""
+        let statement = try db.prepare("""
         INSERT INTO Users (Name, Surname, Level)
         VALUES (:name, :surname, :level)
         """)
@@ -104,15 +104,19 @@ final class PerformanceTests: XCTestCase {
 
         measure {
             for _ in 0..<100 {
-                let statement = try! db.statement("""
+                let statement = try! db.prepare("""
                 SELECT Name, Surname, Level
                 FROM Users
                 ORDER BY Level ASC
                 """)
 
                 var objects = [User]()
-                while let row = try! statement.next() {
-                    let user = User(name: row[0], surname: row[1], level: row[2])
+                while try! statement.step() {
+                    let user = User(
+                        name: statement.column(at: 0),
+                        surname: statement.column(at: 1),
+                        level: statement.column(at: 2)
+                    )
                     objects.append(user)
                 }
             }

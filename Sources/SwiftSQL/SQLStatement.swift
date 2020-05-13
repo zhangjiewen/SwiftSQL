@@ -19,7 +19,7 @@ import SQLite3
 /// 1. Create the prepared statement object using a connection:
 ///
 ///     let db = try SQLConnection(url: <#store_url#>)
-///     let statement = try db.statement("""
+///     let statement = try db.prepare("""
 ///     INSERT INTO Users (Name, Surname) VALUES (?, ?)
 ///     """)
 ///
@@ -31,15 +31,12 @@ import SQLite3
 ///
 /// 3. Execute the statement (you can chain it after `bind()`)
 ///
-///     // Using "call as function"
-///     try statement()
-///
-///     // Using `execute()` method
-///     try statement.execute()
+///     // Using `step()` to execute a statement.
+///     try statement.step()
 ///
 ///     // If it's a `SELECT` query
-///     while let row = try statement.next() {
-///         let name: String = row[0]
+///     while try statement.step() {
+///         let name: String = statement.column(at: 0)
 ///     }
 ///
 /// 4. (Optional) To reuse the compiled statementt, reset it and go back to step 2,
@@ -53,11 +50,6 @@ public final class SQLStatement {
     let db: SQLConnection
     let ref: OpaquePointer
 
-    /// Returns additional information about the statement.
-    public var info: SQLStatementInfo {
-        SQLStatementInfo(statement: self)
-    }
-
     init(db: SQLConnection, ref: OpaquePointer) {
         self.db = db
         self.ref = ref
@@ -69,12 +61,12 @@ public final class SQLStatement {
 
     // MARK: Execute
 
-    /// Executes the statement and returns the row (`SQLRow`) if it is available.
+    /// Executes the statement and returns true of the row is available.
     /// Returns nil if the statement is finished executing and no more data
     /// is available. Throws an error if an error is encountered.
     ///
     ///
-    ///     let statement = try db.statement("SELECT Name, Level FROM Users ORDER BY Level ASC")
+    ///     let statement = try db.prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
     ///
     ///     var objects = [User]()
     ///     while let row = try statement.next() {
@@ -84,28 +76,23 @@ public final class SQLStatement {
     ///
     /// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
     /// for more information.
-    public func next() throws -> SQLRow? {
-        guard try isOK(sqlite3_step(ref)) == SQLITE_ROW else {
-            return nil
-        }
-        return SQLRow(statement: self)
+    public func step() throws -> Bool {
+        try isOK(sqlite3_step(ref)) == SQLITE_ROW
     }
 
     /// Executes the statement. Throws an error if an error is occured.
     ///
     /// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
     /// for more information.
-    @discardableResult
-    public func execute() throws -> SQLStatement {
+    public func execute() throws {
         try isOK(sqlite3_step(ref))
-        return self
     }
 
     // MARK: Binding Parameters
 
     /// Binds values to the statement parameters.
     ///
-    ///     try db.statement("INSERT INTO Users (Level, Name) VALUES (?, ?)")
+    ///     try db.prepare("INSERT INTO Users (Level, Name) VALUES (?, ?)")
     ///        .bind(80, "John")
     ///        .execute()
     ///
@@ -117,7 +104,7 @@ public final class SQLStatement {
 
     /// Binds values to the statement parameters.
     ///
-    ///     try db.statement("INSERT INTO Users (Level, Name) VALUES (?, ?)")
+    ///     try db.prepare("INSERT INTO Users (Level, Name) VALUES (?, ?)")
     ///        .bind([80, "John"])
     ///        .execute()
     ///
@@ -131,7 +118,7 @@ public final class SQLStatement {
 
     /// Binds values to the named statement parameters.
     ///
-    ///     let row = try db.statement("SELECT Level, Name FROM Users WHERE Name = :param LIMIT 1")
+    ///     let row = try db.prepare("SELECT Level, Name FROM Users WHERE Name = :param LIMIT 1")
     ///         .bind([":param": "John""])
     ///         .next()
     ///
@@ -147,7 +134,7 @@ public final class SQLStatement {
 
     /// Binds values to the parameter with the given name.
     ///
-    ///     let row = try db.statement("SELECT Level, Name FROM Users WHERE Name = :param LIMIT 1")
+    ///     let row = try db.prepare("SELECT Level, Name FROM Users WHERE Name = :param LIMIT 1")
     ///         .bind("John", for: ":param")
     ///         .next()
     ///
@@ -184,20 +171,6 @@ public final class SQLStatement {
         }
     }
 
-    // MARK: Reset
-
-    /// Resets the expression and prepares it for the new execution.
-    ///
-    /// SQLite allows the same prepared statement to be evaluated multiple times.
-    /// After a prepared statement has been evaluated it can be reset in order to
-    /// be evaluated again by a call to `reset()`. Reusing compiled statements
-    /// can give a significant performance improvement.
-    @discardableResult
-    public func reset() throws -> SQLStatement {
-        try isOK(sqlite3_reset(ref))
-        return self
-    }
-
     /// Clears bindings.
     ///
     /// It is not commonly useful to evaluate the exact same SQL statement more
@@ -215,6 +188,71 @@ public final class SQLStatement {
     @discardableResult
     public func clearBindings() throws -> SQLStatement {
         try isOK(sqlite3_clear_bindings(ref))
+        return self
+    }
+
+    /// Returns the [number of the SQL parameters](https://www.sqlite.org/c3ref/bind_parameter_count.html).
+    public var bindParameterCount: Int {
+        Int(sqlite3_bind_parameter_count(ref))
+    }
+
+    // MARK: Accessing Columns
+
+    /// Returns a single column of the current result row of a query.
+    ///
+    /// If the SQL statement does not currently point to a valid row, or if the
+    /// column index is out of range, the result is undefined.
+    ///
+    /// - parameter index: The leftmost column of the result set has the index 0.
+    public func column<T: SQLDataType>(at index: Int) -> T {
+        T.sqlColumn(statement: ref, index: Int32(index))
+    }
+
+    /// Returns a single column of the current result row of a query. If the
+    /// value is `Null`, returns `nil.`
+    ///
+    /// If the SQL statement does not currently point to a valid row, or if the
+    /// column index is out of range, the result is undefined.
+    ///
+    /// - parameter index: The leftmost column of the result set has the index 0.
+    public func column<T: SQLDataType>(at index: Int) -> T? {
+        if sqlite3_column_type(ref, Int32(index)) == SQLITE_NULL {
+            return nil
+        } else {
+            return T.sqlColumn(statement: ref, index: Int32(index))
+        }
+    }
+
+    /// Return the number of columns in the result set returned by the statement.
+    ///
+    /// If this routine returns 0, that means the prepared statement returns no data
+    /// (for example an UPDATE). However, just because this routine returns a positive
+    /// number does not mean that one or more rows of data will be returned.
+    public var columnCount: Int {
+        Int(sqlite3_column_count(ref))
+    }
+
+    /// These routines return the name assigned to a particular column in the result
+    /// set of a SELECT statement.
+    ///
+    /// The name of a result column is the value of the "AS" clause for that column,
+    /// if there is an AS clause. If there is no AS clause then the name of the
+    /// column is unspecified and may change from one release of SQLite to the next.
+    public func columnName(at index: Int) -> String {
+        String(cString: sqlite3_column_name(ref, Int32(index)))
+    }
+
+    // MARK: Reset
+
+    /// Resets the expression and prepares it for the new execution.
+    ///
+    /// SQLite allows the same prepared statement to be evaluated multiple times.
+    /// After a prepared statement has been evaluated it can be reset in order to
+    /// be evaluated again by a call to `reset()`. Reusing compiled statements
+    /// can give a significant performance improvement.
+    @discardableResult
+    public func reset() throws -> SQLStatement {
+        try isOK(sqlite3_reset(ref))
         return self
     }
 
