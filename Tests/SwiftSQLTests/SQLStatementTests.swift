@@ -233,11 +233,7 @@ final class SQLStatementTests: XCTestCase {
         try db.populateStore()
 
         // WHEN
-        let statement = try db.statement("""
-        SELECT Name, Level
-        FROM Users
-        ORDER BY Level ASC
-        """)
+        let statement = try db.statement("SELECT Name, Level FROM Users ORDER BY Level ASC")
 
         var objects = [User]()
         while let row = try statement.next() {
@@ -250,17 +246,6 @@ final class SQLStatementTests: XCTestCase {
             User(name: "Alice", level: 80),
             User(name: "Bob", level: 90)
         ])
-    }
-
-    // MARK: Misc
-
-    func testSQL() throws {
-        // GIVEN
-        try db.createTables()
-        let statement = try db.statement("SELECT * FROM Users")
-
-        // THEN
-        XCTAssertEqual(statement.info.sql, "SELECT * FROM Users")
     }
 }
 

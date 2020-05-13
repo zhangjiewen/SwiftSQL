@@ -53,6 +53,7 @@ public final class SQLStatement {
     let db: SQLConnection
     let ref: OpaquePointer
 
+    /// Returns additional information about the statement.
     public var info: SQLStatementInfo {
         SQLStatementInfo(statement: self)
     }
@@ -222,38 +223,5 @@ public final class SQLStatement {
     @discardableResult
     private func isOK(_ code: Int32) throws -> Int32 {
         try db.isOK(code)
-    }
-}
-
-/// Returns additional information about the statement.
-public struct SQLStatementInfo {
-    let statement: SQLStatement
-    private var ref: OpaquePointer { statement.ref }
-
-    /// Returns true (non-zero) if the statement has been stepped at least once
-    /// using `next()`, but has neither run to completion nor been reset.
-    public var isBusy: Bool {
-        sqlite3_stmt_busy(ref) != 0
-    }
-
-    /// Returns true if the statement makes no direct changes to the content of the database file.
-    ///
-    /// - note: For more information see [documentation](https://www.sqlite.org/c3ref/stmt_readonly.html).
-    public var isReadOnly: Bool {
-        sqlite3_stmt_readonly(ref) != 0
-    }
-
-    /// Returns the SQL text used to create the statement.
-    public var sql: String {
-        String(cString: sqlite3_sql(ref))
-    }
-
-    /// Returns the SQL text used to create the statement with the bound parameters expanded.
-    ///
-    /// Note that this API can return `nil` if there is insufficient memory to
-    /// hold the result, or if the result would exceed the maximum string length
-    /// determined by the [SQLITE_LIMIT_LENGTH].
-    public var expandedSQL: String? {
-        sqlite3_expanded_sql(ref).map { String(cString: $0) }
     }
 }

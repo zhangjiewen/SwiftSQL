@@ -29,6 +29,8 @@ VALUES (?, ?)
 """)
 ```
 
+> Once you compiled the statement, use `statement.info` to get additional information about it.
+
 2. Bind values to parameters using one of the `bind()` methods. The provided values must be one of the data types supported by SQLite (see `SQLDataType` for more info)
 
 ```swift
@@ -38,10 +40,10 @@ try statement.bind("John", "Appleseed")
 3. Execute the statement.
 
 ```swift
-// Using `execute()` method
+// Using `execute()` method to run the statement.
 try statement.execute()
 
-// If it's a `SELECT` query
+// If it is a `SELECT` query, use `next()`.
 // See `SQLRow` type for more info how to read data from the columns.
 while let row = try statement.next() {
     let name: String = row[0]
