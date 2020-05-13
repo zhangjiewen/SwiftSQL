@@ -7,9 +7,9 @@
 
 **SwiftSQL** is a micro Swift [SQLite](https://www.sqlite.org/index.html) wrapper, solid and meticulously documented. It maps directly to the SQLite concepts and doesn't introduce anything beyond them.
 
-**SwiftSQLExt** introduces some basic conveniences on top of it. The entire library is just 300 lines of code, but it gets you 80% there.
+**SwiftSQLExt** introduces some basic conveniences on top of it.
 
-SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally.
+SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally. The entire library is just 300 lines of code, but it gets you 80% there.
 
 <br/>
 
