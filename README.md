@@ -1,9 +1,11 @@
+# SwiftSQL
+
 <p align="left">
 <img src="https://img.shields.io/badge/platforms-iOS%2C%20macOS%2C%20watchOS%2C%20tvOS-lightgrey.svg">
 <img src="https://github.com/kean/SwiftSQL/workflows/CI/badge.svg">
 </p>
 
-**SwiftSQL** introduces a Swift API for [SQLite](https://www.sqlite.org/index.html). It doesn't have any ORM-like features. It maps directly to the SQLite concepts with some affordances to make it great a Swift API. It is feature-complete, fully documented and tested.
+**SwiftSQL** introduces a Swift API for [SQLite](https://www.sqlite.org/index.html). It doesn't have any ORM-like features. It maps directly to the SQLite concepts and doesn't introduce anything beyond it. It is feature-complete, fully documented and tested.
 
 <br/>
 
