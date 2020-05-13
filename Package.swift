@@ -27,7 +27,8 @@ let package = Package(
             dependencies: ["SwiftSQL"]
         ),
         .target(
-            name: "SwiftSQLExt"
+            name: "SwiftSQLExt",
+            dependencies: ["SwiftSQL"]
         ),
         .testTarget(
             name: "SwiftSQLExtTests",

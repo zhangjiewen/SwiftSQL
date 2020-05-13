@@ -62,7 +62,7 @@ final class SwiftSQLExtTests: XCTestCase {
         // WHEN
         let users = try db
             .prepare("SELECT Name, Level FROM Users ORDER BY Level ASC")
-            .rows(count: 1, User.self)
+            .rows(User.self, count: 1)
 
         // THEN
         XCTAssertEqual(users, [
