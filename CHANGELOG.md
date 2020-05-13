@@ -2,6 +2,6 @@
 
 ## SwiftSQL 0.1.0
 
-*May 12, 2020*
+*May 13, 2020*
 
 - Initial version
