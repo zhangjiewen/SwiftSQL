@@ -1,3 +1,5 @@
+# SwiftSQL
+
 <p align="left">
 <img src="https://img.shields.io/badge/platforms-iOS%2C%20macOS%2C%20watchOS%2C%20tvOS-lightgrey.svg">
 <img src="https://github.com/kean/SwiftSQL/workflows/CI/badge.svg">
