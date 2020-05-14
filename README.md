@@ -38,7 +38,6 @@ The life-cycle of a prepared statement object usually goes like this:
 1. Create the prepared statement object using a connection:
 
 ```swift
-let db = try SQLConnection(url: storeURL)
 let statement = try db.prepare("""
 INSERT INTO Users (Name, Surname)
 VALUES (?, ?)
@@ -56,8 +55,8 @@ try statement.bind("John", "Appleseed")
 3. Execute the statement.
 
 ```swift
-// Use `step()` to execute a statement
-try statement.step()
+// Use `execute()` to execute a statement
+try statement.execute()
 
 // If the statement returns multiple SQL rows, you can step in a loop
 // and use `column()` family of methods to retrieve values for the current row. 
