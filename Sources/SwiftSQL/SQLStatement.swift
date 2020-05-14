@@ -84,8 +84,9 @@ public final class SQLStatement {
     ///
     /// - note: See [SQLite: Result and Error Codes](https://www.sqlite.org/rescode.html)
     /// for more information.
-    public func execute() throws {
+    public func execute() throws -> SQLStatement {
         try isOK(sqlite3_step(ref))
+        return self
     }
 
     // MARK: Binding Parameters
