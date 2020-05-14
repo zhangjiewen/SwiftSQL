@@ -9,7 +9,7 @@
 
 **SwiftSQLExt** introduces some basic conveniences on top of it.
 
-SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally. The entire library is just 300 lines of code, but it gets you 80% there.
+SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally. The entire library fits just under 300 lines of code, but gets you 80% there.
 
 <br/>
 
@@ -23,7 +23,7 @@ To start reading or writing to a database, you need to open a connection.
 let db = try SQLConnection(url: storeURL)
 ```
 
-By default, the database is opened in readwrite mode and is created if it doesn't exist.
+By default, the database is opened in readwrite mode and is created if it doesn't exist. `SQLConnection` has multiple options for opening the database.
 
 ### `SQLStatement`
 
@@ -38,7 +38,6 @@ The life-cycle of a prepared statement object usually goes like this:
 1. Create the prepared statement object using a connection:
 
 ```swift
-let db = try SQLConnection(url: storeURL)
 let statement = try db.prepare("""
 INSERT INTO Users (Name, Surname)
 VALUES (?, ?)
@@ -56,8 +55,8 @@ try statement.bind("John", "Appleseed")
 3. Execute the statement.
 
 ```swift
-// Use `step()` to execute a statement
-try statement.step()
+// Use `execute()` to execute a statement
+try statement.execute()
 
 // If the statement returns multiple SQL rows, you can step in a loop
 // and use `column()` family of methods to retrieve values for the current row. 
