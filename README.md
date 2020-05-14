@@ -9,7 +9,7 @@
 
 **SwiftSQLExt** introduces some basic conveniences on top of it.
 
-SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally. The entire library is just 300 lines of code, but it gets you 80% there.
+SwiftSQL was created for [Pulse](https://github.com/kean/Pulse) where it is embedded internally. The entire library fits just under 300 lines of code, but gets you 80% there.
 
 <br/>
 
@@ -23,7 +23,7 @@ To start reading or writing to a database, you need to open a connection.
 let db = try SQLConnection(url: storeURL)
 ```
 
-By default, the database is opened in readwrite mode and is created if it doesn't exist.
+By default, the database is opened in readwrite mode and is created if it doesn't exist. `SQLConnection` has multiple options for opening the database.
 
 ### `SQLStatement`
 
