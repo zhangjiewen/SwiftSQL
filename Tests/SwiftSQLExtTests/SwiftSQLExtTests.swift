@@ -69,6 +69,21 @@ final class SwiftSQLExtTests: XCTestCase {
             User(name: "Alice", level: 80)
         ])
     }
+    
+    func testNamedSubscriptsSuccess() throws {
+        // GIVEN
+        try db.populateStore()
+
+        // WHEN
+        let persons = try db
+            .prepare("SELECT Name FROM Persons ORDER BY Level ASC")
+            .rows(Person.self, count: 1)
+
+        // THEN
+        XCTAssertEqual(persons, [
+            Person(name: "Alice", level: nil)
+        ])
+    }
 }
 
 private extension SQLConnection {
@@ -81,19 +96,42 @@ private extension SQLConnection {
             Level INTEGER
         )
         """)
+        try execute("""
+        CREATE TABLE Persons
+        (
+            Id INTEGER PRIMARY KEY NOT NULL,
+            Name VARCHAR,
+            Level INTEGER
+        )
+        """)
 
-        let statement = try self.prepare("""
+        let insertUsersStatement = try self.prepare("""
         INSERT INTO Users (Name, Level)
         VALUES (?, ?)
         """)
 
-        try statement
+        try insertUsersStatement
             .bind("Alice", Int64(80))
             .execute()
 
-        try statement.reset()
+        try insertUsersStatement.reset()
 
-        try statement
+        try insertUsersStatement
+            .bind("Bob", Int64(90))
+            .execute()
+        
+        let insertPersonsStatement = try self.prepare("""
+        INSERT INTO Persons (Name, Level)
+        VALUES (?, ?)
+        """)
+
+        try insertPersonsStatement
+            .bind("Alice", Int64(80))
+            .execute()
+
+        try insertPersonsStatement.reset()
+
+        try insertPersonsStatement
             .bind("Bob", Int64(90))
             .execute()
     }
@@ -112,5 +150,19 @@ private struct User: Hashable, SQLRowDecodable {
     init(row: SQLRow) throws {
         self.name = row[0]
         self.level = row[1]
+    }
+}
+private struct Person: Hashable, SQLRowDecodable {
+    let name: String
+    let level: Int64?
+
+    init(name: String, level: Int64?) {
+        self.name = name
+        self.level = level
+    }
+
+    init(row: SQLRow) throws {
+        self.name = row["Name"]
+        self.level = row["Level"]
     }
 }
