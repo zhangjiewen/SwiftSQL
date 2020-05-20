@@ -242,6 +242,21 @@ public final class SQLStatement {
     public func columnName(at index: Int) -> String {
         String(cString: sqlite3_column_name(ref, Int32(index)))
     }
+    
+    // MARK: Indices from Names
+    
+    /// Returns the index of a column given its name.
+    public func columnIndex(forName name: String) -> Int? {
+        return columnIndices[name]
+    }
+    private lazy var columnIndices: [String : Int] = {
+        var indices: [String : Int] = [:]
+        indices.reserveCapacity(columnCount)
+        for index in 0..<columnCount {
+            indices[String(cString: sqlite3_column_name(ref, Int32(index)))] = index
+        }
+        return indices
+    }()
 
     // MARK: Reset
 

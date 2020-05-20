@@ -20,6 +20,9 @@ public extension SQLStatement {
     func rows<T: SQLRowDecodable>(_ type: T.Type, count: Int? = nil) throws -> [T] {
         var objects = [T]()
         let limit = count ?? Int.max
+        if let count = count {
+            objects.reserveCapacity(count)
+        }
         while let object = try row(T.self), objects.count < limit {
             objects.append(object)
         }
@@ -59,6 +62,32 @@ public struct SQLRow {
     /// - parameter index: The leftmost column of the result set has the index 0.
     public subscript<T: SQLDataType>(index: Int) -> T? {
         statement.column(at: index)
+    }
+    
+    /// Returns a single column (by its name) of the current result row of a query.
+    ///
+    /// If the SQL statement does not currently point to a valid row, the result is undefined.
+    /// If the passed columnName doesn't point to a valid column name, a fatal error is raised.
+    ///
+    /// - parameter columnName: The name of the column.
+    public subscript<T: SQLDataType>(columnName: String) -> T {
+        guard let columnIndex = statement.columnIndex(forName: columnName) else {
+            fatalError("No such column \(columnName)")
+        }
+        return statement.column(at: columnIndex)
+    }
+    
+    /// Returns a single column (by its name) of the current result row of a query.
+    ///
+    /// If the SQL statement does not currently point to a valid row, the result is undefined.
+    /// If the passed columnName doesn't point to a valid column name, nil is returned.
+    ///
+    /// - parameter columnName: The name of the column.
+    public subscript<T: SQLDataType>(columnName: String) -> T? {
+        guard let columnIndex = statement.columnIndex(forName: columnName) else {
+            return nil
+        }
+        return statement.column(at: columnIndex)
     }
 }
 
