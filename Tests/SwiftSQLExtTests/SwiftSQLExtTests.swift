@@ -70,20 +70,50 @@ final class SwiftSQLExtTests: XCTestCase {
         ])
     }
     
-    func testNamedSubscriptsSuccess() throws {
+    func testIndependentSQLRows() throws {
         // GIVEN
         try db.populateStore()
 
         // WHEN
-        let persons = try db
+        let names: [String] = try db
             .prepare("SELECT Name FROM Persons ORDER BY Level ASC")
-            .rows(Person.self, count: 1)
+            .rows()
+            .map({ $0["Name"] })
 
         // THEN
-        XCTAssertEqual(persons, [
-            Person(name: "Alice", level: nil)
+        XCTAssertEqual(names, [
+            "Alice",
+            "Bob"
         ])
     }
+    
+    func testIndependentSingleSQLRowNonNil() throws {
+        // GIVEN
+        try db.populateStore()
+
+        // WHEN
+        let row = try db
+            .prepare("SELECT Name FROM Persons ORDER BY Level ASC")
+            .row()
+
+        // THEN
+        XCTAssertEqual(try XCTUnwrap(row)["Name"] as String, "Alice")
+    }
+    
+    func testIndependentSingleSQLRowNil() throws {
+        // GIVEN
+        try db.populateStore()
+
+        // WHEN
+        let row = try db
+            .prepare("SELECT Name FROM Persons ORDER BY Level ASC")
+            .row()
+
+        // THEN
+        XCTAssertNil(try XCTUnwrap(row)["Level"] as Int?)
+    }
+    
+    
 }
 
 private extension SQLConnection {

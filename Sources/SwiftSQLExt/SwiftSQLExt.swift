@@ -28,19 +28,40 @@ public extension SQLStatement {
         }
         return objects
     }
+    
+    /// Fetches the next row as `SQLRow`.
+    func row() throws -> SQLRow? {
+        guard try step() else {
+            return nil
+        }
+        return SQLRow(statement: self)
+    }
+
+    /// Fetches the first `count` rows as `SQLRow`s returned by the statement. By default,
+    /// fetches all rows.
+    func rows(count: Int? = nil) throws -> [SQLRow] {
+        var objects = [SQLRow]()
+        let limit = count ?? Int.max
+        if let count = count {
+            objects.reserveCapacity(count)
+        }
+        while let object = try row(), objects.count < limit {
+            objects.append(object)
+        }
+        return objects
+    }
 }
 
 /// Represents a single row returned by the SQL statement.
-///
-/// - warning: This is a leaky abstraction. This is not a real value type, it
-/// just wraps the underlying statement. If the statement moves to the next
-/// row by calling `step()`, the row is also going to point to the new row.
 public struct SQLRow {
-    /// The underlying statement.
-    public let statement: SQLStatement // Storing as strong reference doesn't seem to affect performance
 
     public init(statement: SQLStatement) {
-        self.statement = statement
+        values = (0..<statement.columnCount).map { index in
+            statement.column(at: index)
+        }
+        columnIndicesByNames = Dictionary(uniqueKeysWithValues: (0..<statement.columnCount).map { index in
+            (statement.columnName(at: index), index)
+        })
     }
 
     /// Returns a single column of the current result row of a query.
@@ -50,7 +71,7 @@ public struct SQLRow {
     ///
     /// - parameter index: The leftmost column of the result set has the index 0.
     public subscript<T: SQLDataType>(index: Int) -> T {
-        statement.column(at: index)
+        T.convert(from: values[index]!)!
     }
 
     /// Returns a single column of the current result row of a query. If the
@@ -61,7 +82,8 @@ public struct SQLRow {
     ///
     /// - parameter index: The leftmost column of the result set has the index 0.
     public subscript<T: SQLDataType>(index: Int) -> T? {
-        statement.column(at: index)
+        guard let value = values[index] else { return nil }
+        return T.convert(from: value)
     }
     
     /// Returns a single column (by its name) of the current result row of a query.
@@ -71,10 +93,10 @@ public struct SQLRow {
     ///
     /// - parameter columnName: The name of the column.
     public subscript<T: SQLDataType>(columnName: String) -> T {
-        guard let columnIndex = statement.columnIndex(forName: columnName) else {
+        guard let columnIndex = columnIndicesByNames[columnName] else {
             fatalError("No such column \(columnName)")
         }
-        return statement.column(at: columnIndex)
+        return self[columnIndex]
     }
     
     /// Returns a single column (by its name) of the current result row of a query.
@@ -84,11 +106,14 @@ public struct SQLRow {
     ///
     /// - parameter columnName: The name of the column.
     public subscript<T: SQLDataType>(columnName: String) -> T? {
-        guard let columnIndex = statement.columnIndex(forName: columnName) else {
+        guard let columnIndex = columnIndicesByNames[columnName] else {
             return nil
         }
-        return statement.column(at: columnIndex)
+        return self[columnIndex]
     }
+    
+    private let values: [Any?]
+    private let columnIndicesByNames: [String : Int]
 }
 
 public protocol SQLRowDecodable {

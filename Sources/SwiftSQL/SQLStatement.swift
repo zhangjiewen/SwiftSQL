@@ -223,6 +223,28 @@ public final class SQLStatement {
             return T.sqlColumn(statement: ref, index: Int32(index))
         }
     }
+    
+    public func column(at index: Int) -> Any? {
+        let index = Int32(index)
+        let type = sqlite3_column_type(ref, index)
+        switch type {
+            case SQLITE_INTEGER:
+                return sqlite3_column_int64(ref, index)
+            case SQLITE_FLOAT:
+                return sqlite3_column_double(ref, index)
+            case SQLITE_TEXT:
+                return String(cString: sqlite3_column_text(ref, index))
+            case SQLITE_BLOB:
+                if let bytes = sqlite3_column_blob(ref, index) {
+                    let byteCount = sqlite3_column_bytes(ref, index)
+                    return Data(bytes: bytes, count: Int(byteCount))
+                } else {
+                    return Data()
+                }
+            default:
+                return nil
+        }
+    }
 
     /// Return the number of columns in the result set returned by the statement.
     ///
