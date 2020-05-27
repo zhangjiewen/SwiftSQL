@@ -14,6 +14,10 @@ public protocol SQLDataType {
     static func sqlColumn(statement: OpaquePointer, index: Int32) -> Self
 }
 
+public extension SQLDataType {
+    static func convert(from value: Any) -> Self? { value as? Self }
+}
+
 extension Int: SQLDataType {
     public func sqlBind(statement: OpaquePointer, index: Int32) {
         sqlite3_bind_int64(statement, index, Int64(self))
