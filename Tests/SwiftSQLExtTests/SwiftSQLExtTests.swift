@@ -170,9 +170,9 @@ private extension SQLConnection {
 
 private struct User: Hashable, SQLRowDecodable {
     let name: String
-    let level: Int64
+    let level: Int
 
-    init(name: String, level: Int64) {
+    init(name: String, level: Int) {
         self.name = name
         self.level = level
     }

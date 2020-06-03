@@ -71,7 +71,11 @@ public struct SQLRow {
     ///
     /// - parameter index: The leftmost column of the result set has the index 0.
     public subscript<T: SQLDataType>(index: Int) -> T {
-        T.convert(from: values[index]!)!
+        let value = values[index]!
+        guard let convertedValue = T.convert(from: value) else {
+            fatalError("Could not convert \(type(of: value)). Make sure target type (\(T.self)) correctly implements convert(from:).")
+        }
+        return convertedValue
     }
 
     /// Returns a single column of the current result row of a query. If the

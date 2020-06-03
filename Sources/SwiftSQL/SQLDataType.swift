@@ -12,6 +12,7 @@ import SQLite3
 public protocol SQLDataType {
     func sqlBind(statement: OpaquePointer, index: Int32)
     static func sqlColumn(statement: OpaquePointer, index: Int32) -> Self
+    static func convert(from value: Any) -> Self?
 }
 
 public extension SQLDataType {
@@ -25,6 +26,11 @@ extension Int: SQLDataType {
 
     public static func sqlColumn(statement: OpaquePointer, index: Int32) -> Int {
         Int(sqlite3_column_int64(statement, index))
+    }
+    
+    public static func convert(from value: Any) -> Int? {
+        guard let int64 = value as? Int64 else { return nil }
+        return Int(int64)
     }
 }
 
