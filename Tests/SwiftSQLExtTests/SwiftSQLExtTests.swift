@@ -141,13 +141,13 @@ private extension SQLConnection {
         """)
 
         try insertUsersStatement
-            .bind("Alice", Int64(80))
+            .bind("Alice", 80)
             .execute()
 
         try insertUsersStatement.reset()
 
         try insertUsersStatement
-            .bind("Bob", Int64(90))
+            .bind("Bob", 90)
             .execute()
         
         let insertPersonsStatement = try self.prepare("""
