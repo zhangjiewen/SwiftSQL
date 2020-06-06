@@ -12,7 +12,6 @@ import SQLite3
 public protocol SQLDataType {
     func sqlBind(statement: OpaquePointer, index: Int32)
     static func sqlColumn(statement: OpaquePointer, index: Int32) -> Self
-    static func convert(from value: Any) -> Self?
 }
 
 extension Int: SQLDataType {
@@ -22,11 +21,6 @@ extension Int: SQLDataType {
 
     public static func sqlColumn(statement: OpaquePointer, index: Int32) -> Int {
         Int(sqlite3_column_int64(statement, index))
-    }
-    
-    public static func convert(from value: Any) -> Int? {
-        guard let int64 = value as? Int64 else { return nil }
-        return Int(int64)
     }
 }
 
@@ -38,11 +32,6 @@ extension Int32: SQLDataType {
     public static func sqlColumn(statement: OpaquePointer, index: Int32) -> Int32 {
         sqlite3_column_int(statement, index)
     }
-    
-    public static func convert(from value: Any) -> Self? {
-        guard let int64 = value as? Int64 else { return nil }
-        return Int32(int64)
-    }
 }
 
 extension Int64: SQLDataType {
@@ -53,8 +42,6 @@ extension Int64: SQLDataType {
     public static func sqlColumn(statement: OpaquePointer, index: Int32) -> Int64 {
         sqlite3_column_int64(statement, index)
     }
-    
-    public static func convert(from value: Any) -> Self? { value as? Self }
 }
 
 extension Double: SQLDataType {
@@ -65,8 +52,6 @@ extension Double: SQLDataType {
     public static func sqlColumn(statement: OpaquePointer, index: Int32) -> Double {
         sqlite3_column_double(statement, index)
     }
-    
-    public static func convert(from value: Any) -> Self? { value as? Self }
 }
 
 extension String: SQLDataType {
@@ -78,8 +63,6 @@ extension String: SQLDataType {
         guard let pointer = sqlite3_column_text(statement, index) else { return "" }
         return String(cString: pointer)
     }
-    
-    public static func convert(from value: Any) -> Self? { value as? Self }
 }
 
 extension Data: SQLDataType {
@@ -94,8 +77,6 @@ extension Data: SQLDataType {
         let count = Int(sqlite3_column_bytes(statement, Int32(index)))
         return Data(bytes: pointer, count: count)
     }
-    
-    public static func convert(from value: Any) -> Self? { value as? Self }
 }
 
 private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)

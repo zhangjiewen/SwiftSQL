@@ -113,7 +113,56 @@ final class SwiftSQLExtTests: XCTestCase {
         XCTAssertNil(try XCTUnwrap(row)["Level"] as Int?)
     }
     
+    func testInitializableBySQLColumnValueConveniencesIn64Source() throws {
+        // GIVEN
+        let sqlColumnValue = SQLColumnValue.int64(1)
+        
+        // WHEN
+        let int32 = Int32(sqlColumnValue: sqlColumnValue)
+        let int64 = Int64(sqlColumnValue: sqlColumnValue)
+        let double = Double(sqlColumnValue: sqlColumnValue)
+        let string = String(sqlColumnValue: sqlColumnValue)
+        
+        //THEN
+        XCTAssertEqual(try XCTUnwrap(int32), 1)
+        XCTAssertEqual(try XCTUnwrap(int64), 1)
+        XCTAssertEqual(try XCTUnwrap(double), 1)
+        XCTAssertEqual(try XCTUnwrap(string), "1")
+    }
     
+    func testInitializableBySQLColumnValueConveniencesDoubleSource() throws {
+        // GIVEN
+        let sqlColumnValue = SQLColumnValue.double(1)
+        
+        // WHEN
+        let int = Int(sqlColumnValue: sqlColumnValue)
+        let int32 = Int32(sqlColumnValue: sqlColumnValue)
+        let int64 = Int64(sqlColumnValue: sqlColumnValue)
+        let string = String(sqlColumnValue: sqlColumnValue)
+        
+        //THEN
+        XCTAssertEqual(try XCTUnwrap(int), 1)
+        XCTAssertEqual(try XCTUnwrap(int32), 1)
+        XCTAssertEqual(try XCTUnwrap(int64), 1)
+        XCTAssertEqual(try XCTUnwrap(string), "1.0")
+    }
+    
+    func testInitializableBySQLColumnValueConveniencesStringSource() throws {
+        // GIVEN
+        let sqlColumnValue = SQLColumnValue.string("1")
+        
+        // WHEN
+        let int = Int(sqlColumnValue: sqlColumnValue)
+        let int32 = Int32(sqlColumnValue: sqlColumnValue)
+        let int64 = Int64(sqlColumnValue: sqlColumnValue)
+        let double = Double(sqlColumnValue: sqlColumnValue)
+        
+        //THEN
+        XCTAssertEqual(try XCTUnwrap(int), 1)
+        XCTAssertEqual(try XCTUnwrap(int32), 1)
+        XCTAssertEqual(try XCTUnwrap(int64), 1)
+        XCTAssertEqual(try XCTUnwrap(double), 1)
+    }
 }
 
 private extension SQLConnection {

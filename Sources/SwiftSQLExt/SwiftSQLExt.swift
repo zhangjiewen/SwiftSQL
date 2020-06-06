@@ -70,9 +70,9 @@ public struct SQLRow {
     /// column index is out of range, the result is undefined.
     ///
     /// - parameter index: The leftmost column of the result set has the index 0.
-    public subscript<T: SQLDataType>(index: Int) -> T {
-        let value = values[index]!
-        guard let convertedValue = T.convert(from: value) else {
+    public subscript<T: InitializableBySQLColumnValue>(index: Int) -> T {
+        let value = values[index]
+        guard let convertedValue = T(sqlColumnValue: value) else {
             fatalError("Could not convert \(type(of: value)). Make sure target type (\(T.self)) correctly implements convert(from:).")
         }
         return convertedValue
@@ -85,9 +85,8 @@ public struct SQLRow {
     /// column index is out of range, the result is undefined.
     ///
     /// - parameter index: The leftmost column of the result set has the index 0.
-    public subscript<T: SQLDataType>(index: Int) -> T? {
-        guard let value = values[index] else { return nil }
-        return T.convert(from: value)
+    public subscript<T: InitializableBySQLColumnValue>(index: Int) -> T? {
+        return T(sqlColumnValue: values[index])
     }
     
     /// Returns a single column (by its name) of the current result row of a query.
@@ -96,7 +95,7 @@ public struct SQLRow {
     /// If the passed columnName doesn't point to a valid column name, a fatal error is raised.
     ///
     /// - parameter columnName: The name of the column.
-    public subscript<T: SQLDataType>(columnName: String) -> T {
+    public subscript<T: InitializableBySQLColumnValue>(columnName: String) -> T {
         guard let columnIndex = columnIndicesByNames[columnName] else {
             fatalError("No such column \(columnName)")
         }
@@ -109,17 +108,21 @@ public struct SQLRow {
     /// If the passed columnName doesn't point to a valid column name, nil is returned.
     ///
     /// - parameter columnName: The name of the column.
-    public subscript<T: SQLDataType>(columnName: String) -> T? {
+    public subscript<T: InitializableBySQLColumnValue>(columnName: String) -> T? {
         guard let columnIndex = columnIndicesByNames[columnName] else {
             return nil
         }
         return self[columnIndex]
     }
     
-    private let values: [Any?]
+    private let values: [SQLColumnValue]
     private let columnIndicesByNames: [String : Int]
 }
 
 public protocol SQLRowDecodable {
     init(row: SQLRow) throws
+}
+
+public protocol InitializableBySQLColumnValue {
+    init?(sqlColumnValue: SQLColumnValue)
 }
