@@ -224,25 +224,25 @@ public final class SQLStatement {
         }
     }
     
-    public func column(at index: Int) -> Any? {
+    public func column(at index: Int) -> SQLColumnValue {
         let index = Int32(index)
         let type = sqlite3_column_type(ref, index)
         switch type {
             case SQLITE_INTEGER:
-                return sqlite3_column_int64(ref, index)
+                return .int64(sqlite3_column_int64(ref, index))
             case SQLITE_FLOAT:
-                return sqlite3_column_double(ref, index)
+                return .double(sqlite3_column_double(ref, index))
             case SQLITE_TEXT:
-                return String(cString: sqlite3_column_text(ref, index))
+                return .string(String(cString: sqlite3_column_text(ref, index)))
             case SQLITE_BLOB:
                 if let bytes = sqlite3_column_blob(ref, index) {
                     let byteCount = sqlite3_column_bytes(ref, index)
-                    return Data(bytes: bytes, count: Int(byteCount))
+                    return .data(Data(bytes: bytes, count: Int(byteCount)))
                 } else {
-                    return Data()
+                    return .data(Data())
                 }
             default:
-                return nil
+                return .null
         }
     }
 
