@@ -163,6 +163,19 @@ final class SwiftSQLExtTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(int64), 1)
         XCTAssertEqual(try XCTUnwrap(double), 1)
     }
+    
+    func testCaseInsensitiveColumnNameSubscripts() throws {
+        // GIVEN
+        try db.populateStore()
+
+        // WHEN
+        let row = try db
+            .prepare("SELECT Name FROM Persons ORDER BY Level ASC")
+            .row()
+
+        // THEN
+        XCTAssertEqual(try XCTUnwrap(row)["name"] as String, "Alice")
+    }
 }
 
 private extension SQLConnection {
