@@ -59,9 +59,7 @@ public struct SQLRow {
         values = (0..<statement.columnCount).map { index in
             statement.column(at: index)
         }
-        columnIndicesByNames = Dictionary(uniqueKeysWithValues: (0..<statement.columnCount).map { index in
-            (statement.columnName(at: index), index)
-        })
+        columnIndicesByNames = statement.columnIndices
     }
 
     /// Returns a single column of the current result row of a query.
@@ -96,7 +94,7 @@ public struct SQLRow {
     ///
     /// - parameter columnName: The name of the column.
     public subscript<T: InitializableBySQLColumnValue>(columnName: String) -> T {
-        guard let columnIndex = columnIndicesByNames[columnName] else {
+        guard let columnIndex = columnIndicesByNames[columnName.lowercased()] else {
             fatalError("No such column \(columnName)")
         }
         return self[columnIndex]
@@ -109,7 +107,7 @@ public struct SQLRow {
     ///
     /// - parameter columnName: The name of the column.
     public subscript<T: InitializableBySQLColumnValue>(columnName: String) -> T? {
-        guard let columnIndex = columnIndicesByNames[columnName] else {
+        guard let columnIndex = columnIndicesByNames[columnName.lowercased()] else {
             return nil
         }
         return self[columnIndex]

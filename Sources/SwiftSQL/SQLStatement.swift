@@ -269,13 +269,16 @@ public final class SQLStatement {
     
     /// Returns the index of a column given its name.
     public func columnIndex(forName name: String) -> Int? {
-        return columnIndices[name]
+        return columnIndices[name.lowercased()]
     }
-    private lazy var columnIndices: [String : Int] = {
+    
+    /// Holds each column index key-ed by its name.
+    /// Initialized for all columns as soon as it's first accessed.
+    public private(set) lazy var columnIndices: [String : Int] = {
         var indices: [String : Int] = [:]
         indices.reserveCapacity(columnCount)
         for index in 0..<columnCount {
-            indices[String(cString: sqlite3_column_name(ref, Int32(index)))] = index
+            indices[columnName(at: index).lowercased()] = index
         }
         return indices
     }()
